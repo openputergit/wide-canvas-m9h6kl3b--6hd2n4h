@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Probability Bot Analyzer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .clay-effect {
+            background: #a5d8f3;
+            border-radius: 15px;
+            box-shadow: 
+                20px 20px 60px #8ab5cc,
+                -20px -20px 60px #c0fbff,
+                inset 2px 2px 4px rgba(255, 255, 255, 0.5),
+                inset -2px -2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .clay-button {
+            transition: all 0.3s ease;
+        }
+        .clay-button:active {
+            box-shadow: 
+                10px 10px 30px #8ab5cc,
+                -10px -10px 30px #c0fbff,
+                inset 2px 2px 4px rgba(0, 0, 0, 0.1),
+                inset -2px -2px 4px rgba(255, 255, 255, 0.5);
+            transform: scale(0.98);
+        }
+        body {
+            background-color: #e0f4ff;
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4">
+    <div class="max-w-md mx-auto clay-effect p-6 space-y-6">
+        <h1 class="text-2xl font-bold text-center text-gray-800 mb-6">Screen Probability Analyzer</h1>
+        
+        <!-- Video Feed Section -->
+        <div class="relative clay-effect p-4 aspect-video">
+            <video id="videoFeed" class="w-full h-full rounded-lg" autoplay playsinline></video>
+            <div id="probability" class="absolute top-4 right-4 clay-effect px-4 py-2 text-gray-800 font-semibold">
+                Win Probability: <span id="probabilityValue">0%</span>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="flex justify-center space-x-4">
+            <button id="startBtn" class="clay-effect clay-button px-6 py-3 rounded-lg text-gray-800 font-semibold hover:opacity-90">
+                <i class="bi bi-play-fill"></i> Start
+            </button>
+            <button id="stopBtn" class="clay-effect clay-button px-6 py-3 rounded-lg text-gray-800 font-semibold hover:opacity-90">
+                <i class="bi bi-stop-fill"></i> Stop
+            </button>
+        </div>
+
+        <!-- Analysis Log -->
+        <div class="clay-effect p-4 h-40 overflow-y-auto">
+            <h3 class="font-semibold mb-2">Analysis Log</h3>
+            <ul id="logList" class="space-y-2 text-sm text-gray-700"></ul>
+        </div>
+    </div>
+
+    <script>
+        const videoElement = document.getElementById('videoFeed');
+        const startButton = document.getElementById('startBtn');
+        const stopButton = document.getElementById('stopBtn');
+        const probabilityValue = document.getElementById('probabilityValue');
+        const logList = document.getElementById('logList');
+        let stream = null;
+        let analyzeInterval = null;
+
+        async function startCamera() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: 'environment',
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    } 
+                });
+                videoElement.srcObject = stream;
+                startAnalysis();
+                addLog("Camera started successfully");
+            } catch (err) {
+                addLog("Error accessing camera: " + err.message);
+            }
+        }
+
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                videoElement.srcObject = null;
+                clearInterval(analyzeInterval);
+                probabilityValue.textContent = "0%";
+                addLog("Camera stopped");
+            }
+        }
+
+        function startAnalysis() {
+            analyzeInterval = setInterval(() => {
+                // Simulated probability calculation
+                const probability = Math.floor(Math.random() * 100);
+                probabilityValue.textContent = `${probability}%`;
+                
+                if (probability > 75) {
+                    addLog("High winning probability detected!");
+                } else if (probability < 25) {
+                    addLog("Low winning probability detected.");
+                }
+            }, 2000);
+        }
+
+        function addLog(message) {
+            const li = document.createElement('li');
+            li.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+            logList.insertBefore(li, logList.firstChild);
+            if (logList.children.length > 10) {
+                logList.removeChild(logList.lastChild);
+            }
+        }
+
+        startButton.addEventListener('click', startCamera);
+        stopButton.addEventListener('click', stopCamera);
+
+        // Clean up on page unload
+        window.addEventListener('beforeunload', stopCamera);
+    </script>
+<script>document.body.addEventListener('wheel', e => { if (!e.ctrlKey) return; e.preventDefault(); return }, { passive: false })</script>
+	</body>
+</html>
